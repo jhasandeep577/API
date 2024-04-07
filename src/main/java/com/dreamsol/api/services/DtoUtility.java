@@ -28,7 +28,7 @@ import jakarta.validation.Validator;
 public class DtoUtility {
     private Validator validator;
 
-    public <T>Set<String> validateUserDto(T dto) {
+    public <T>Set<String> validateDto(T dto) {
         this.validator = Validation.buildDefaultValidatorFactory().getValidator();
         Set<ConstraintViolation<T>> violations = validator.validate(dto);
         Set<String> failedValidations = violations.stream().map((violation) -> {
@@ -38,7 +38,7 @@ public class DtoUtility {
         return failedValidations;
     }
 
-    public <T>boolean validateUserDtoBool(T dto) {
+    public <T>boolean validateDtoBool(T dto) {
         this.validator = Validation.buildDefaultValidatorFactory().getValidator();
         Set<ConstraintViolation<T>> violations = validator.validate(dto);
         if (violations.isEmpty()) {
@@ -64,17 +64,17 @@ public class DtoUtility {
             case "user":
                 ExcelDataResponseDto userDto = this.toExcelDataResponseDto((UserDto) dto);
                 userDto.setStatus(false);
-                userDto.setMessages(this.validateUserDto((UserDto) dto));
+                userDto.setMessages(this.validateDto((UserDto) dto));
                 return userDto;
             case "department":
                 DeptExcelDto departmentDto = this.toDeptExcelDto((DepartmentDto) dto);
                 departmentDto.setStatus(false);
-                departmentDto.setMessages(this.validateUserDto((DepartmentDto) dto));
+                departmentDto.setMessages(this.validateDto((DepartmentDto) dto));
                 return departmentDto;
             case "usertype":
                 UsertypeExcelDto userTypeDto = this.toUserTypeExcelDto((UserTypeDto) dto);
                 userTypeDto.setStatus(false);
-                userTypeDto.setMessages(this.validateUserDto((UserTypeDto) dto));
+                userTypeDto.setMessages(this.validateDto((UserTypeDto) dto));
                 return userTypeDto;
             default:
                 throw new IllegalArgumentException("Enter a valid entity name");

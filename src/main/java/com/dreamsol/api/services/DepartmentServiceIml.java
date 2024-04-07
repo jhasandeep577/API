@@ -1,6 +1,8 @@
 package com.dreamsol.api.services;
 
 import java.io.ByteArrayInputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -140,20 +142,51 @@ public class DepartmentServiceIml implements DepartmentService {
     }
 
     public ResponseEntity<?> saveExcelData(List<DeptExcelDto> dto) {
-        List<Department> departments = dto.stream()
+        List<DeptExcelDto> validDto = new ArrayList<>();
+        List<DeptExcelDto> invalidDepartment = new ArrayList<>();
+        dto.stream().forEach((department) -> {
+            if (dtoUtility.validateDtoBool(department) == false) {
+                department.setMessages(dtoUtility.validateDto(department));
+                department.setStatus(false);
+                invalidDepartment.add(department);
+            } else {
+                validDto.add(department);
+            }
+        });
+        List<Department> departments = validDto.stream()
                 .map(dtoUtility::toDepartment)
                 .collect(Collectors.toList());
-        List<Department> validDepartments = departments.stream()
-                .map(department -> {
+        List<Department> validDepartments = new ArrayList<>();
+        List<Department> existingDepartment = new ArrayList<>();
+        departments.stream()
+                .forEach(department -> {
                     this.departmentRepo.findByDepartmentCode(department.getDepartmentCode())
-                            .ifPresent(existingDept -> department.setId(existingDept.getId()));
-                    return department;
-                }).collect(Collectors.toList());
+                            .ifPresentOrElse((dbDepartment) -> {
+                                existingDepartment.add(dbDepartment);
+                            }, () -> {
+                                validDepartments.add(department);
+                            });
+                });
         List<Department> dbDepartments = this.departmentRepo.saveAll(validDepartments);
+        List<DepartmentDto> invalidResponse = existingDepartment.stream().map(dtoUtility::toDepartmentDto)
+                .collect(Collectors.toList());
         List<DepartmentDto> dbDepartmentResponse = dbDepartments.stream()
                 .map(dtoUtility::toDepartmentDto)
                 .collect(Collectors.toList());
-        return ResponseEntity.status(HttpStatus.CREATED).body(dbDepartmentResponse);
+        Map<String, List<?>> reposneMap = new HashMap<>();
+        if(!dbDepartmentResponse.isEmpty()){
+            reposneMap.put("Added DepartmentList", dbDepartmentResponse);
+        }
+        if(!existingDepartment.isEmpty()){
+            reposneMap.put("Already ExistingDepartmentList", invalidResponse);
+        }
+        if(!invalidDepartment.isEmpty()){
+            reposneMap.put("InvalidDepartments", invalidDepartment);
+        }
+        if(dbDepartmentResponse.isEmpty()){
+            return ResponseEntity.status(HttpStatus.OK).body(reposneMap);
+        }
+        return ResponseEntity.status(HttpStatus.CREATED).body(reposneMap);
     }
 
     public ResponseEntity<Resource> getExcelSheet(String keyword) throws Exception {

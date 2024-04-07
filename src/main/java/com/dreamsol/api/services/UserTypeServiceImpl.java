@@ -1,6 +1,8 @@
 package com.dreamsol.api.services;
 
 import java.io.ByteArrayInputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -135,21 +137,52 @@ public class UserTypeServiceImpl implements UserTypeService {
     }
 
     public ResponseEntity<?> saveExcelData(List<UsertypeExcelDto> dto) {
-        List<UserType> userTypes = dto.stream()
+        List<UsertypeExcelDto> validDto = new ArrayList<>();
+        List<UsertypeExcelDto> invalidDto = new ArrayList<>();
+        dto.stream().forEach((usertype) -> {
+            if (dtoUtility.validateDtoBool(usertype) == false) {
+                usertype.setMessages(dtoUtility.validateDto(usertype));
+                usertype.setStatus(false);
+                invalidDto.add(usertype);
+            } else {
+                validDto.add(usertype);
+            }
+        });
+        List<UserType> usertypes = validDto.stream()
                 .map(dtoUtility::toUserType)
                 .collect(Collectors.toList());
-        List<UserType> validUserTypes = userTypes.stream()
-                .map(userType -> {
-                    this.userTypeRepo.findByUserTypeName(userType.getUserTypeName()).ifPresent((existingUserType) -> {
-                        userType.setId(existingUserType.getId());
-                    });
-                    return userType;
-                }).collect(Collectors.toList());
+        List<UserType> validUserTypes = new ArrayList<>();
+        List<UserType> existingUserTypes = new ArrayList<>();
+        usertypes.stream()
+                .forEach(usertype -> {
+                    this.userTypeRepo.findByUserTypeName(usertype.getUserTypeName())
+                            .ifPresentOrElse((dbUserType) -> {
+                                existingUserTypes.add(dbUserType);
+                            }, () -> {
+                                validUserTypes.add(usertype);
+                            });
+                });
         List<UserType> dbUserTypes = this.userTypeRepo.saveAll(validUserTypes);
-        List<UserTypeDto> dbUserTypeResponse = dbUserTypes.stream()
+        List<UserTypeDto> invalidResponse = existingUserTypes.stream().map(dtoUtility::toUserTypeDto)
+                .collect(Collectors.toList());
+        List<UserTypeDto> dbUsertypeResponse = dbUserTypes.stream()
                 .map(dtoUtility::toUserTypeDto)
                 .collect(Collectors.toList());
-        return ResponseEntity.status(HttpStatus.CREATED).body(dbUserTypeResponse);
+        Map<String, List<?>> reposneMap = new HashMap<>();
+        if (!dbUsertypeResponse.isEmpty()) {
+            reposneMap.put("Added User-Type-List", dbUsertypeResponse);
+        }
+        if (!invalidResponse.isEmpty()) {
+            reposneMap.put("Already Existing-UserTypes", invalidResponse);
+        }
+        if (!invalidDto.isEmpty()) {
+            reposneMap.put("Invalid-UserTypes", invalidDto);
+        }
+        if (dbUsertypeResponse.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.OK).body(reposneMap);
+        }
+        return ResponseEntity.status(HttpStatus.CREATED).body(reposneMap);
+
     }
 
     public ResponseEntity<Resource> getExcelSheet(String keyword) throws Exception {

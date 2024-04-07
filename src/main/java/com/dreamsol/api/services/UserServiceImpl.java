@@ -215,20 +215,24 @@ public class UserServiceImpl implements UserService {
                     throw new IllegalArgumentException("Enter a valid Entity name");
             }
 
-            List<?> validUserData = new ArrayList<>();
-            List<?> invalidUserData = new ArrayList<>();
-            List<?> excelUsers = (List<?>) fileService.getList(file, getDtoMap(entityName), dtoClass);
+            List<?> validData = new ArrayList<>();
+            List<?> invalidData = new ArrayList<>();
+            List<?> excelData = (List<?>) fileService.getList(file, getDtoMap(entityName), dtoClass);
 
-            excelUsers.forEach(excelUser -> {
-                boolean isValid = dtoUtility.validateUserDtoBool(excelUser);
+            excelData.forEach(excelUser -> {
+                boolean isValid = dtoUtility.validateDtoBool(excelUser);
                 Object dto = isValid ? dtoUtility.toValidExcelDto(excelUser, entityName)
                         : dtoUtility.toInvalidExcelDto(excelUser, entityName);
-                ((List<Object>) (isValid ? validUserData : invalidUserData)).add(dto);
+                ((List<Object>) (isValid ? validData : invalidData)).add(dto);
             });
 
             Map<String, Object> response = new HashMap<>();
-            response.put("ValidUserData", validUserData);
-            response.put("InvalidUserData", invalidUserData);
+            if(!validData.isEmpty()){
+                response.put("ValidData", validData);
+            }
+            if(!invalidData.isEmpty()){
+                response.put("InvalidData", invalidData);
+            }
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
             e.printStackTrace();
@@ -251,7 +255,7 @@ public class UserServiceImpl implements UserService {
                 throw new IllegalArgumentException("Enter a valid entity name");
         }
     }
-  
+
     public ResponseEntity<?> downloadExcelFormat(String entityName) throws Exception {
         String fileName = "ExcelFormat.xlsx";
         Class<?> dtoClass = null;
@@ -278,40 +282,61 @@ public class UserServiceImpl implements UserService {
     }
 
     public ResponseEntity<?> saveExcelData(List<ExcelDataResponseDto> dto) {
-        List<User> users = dto.stream()
+        List<ExcelDataResponseDto> validData = new ArrayList<>();
+        List<ExcelDataResponseDto> InvalidData = new ArrayList<>();
+        dto.stream().forEach((user) -> {
+            if (dtoUtility.validateDtoBool(user) == false) {
+                user.setStatus(false);
+                user.setMessages(dtoUtility.validateDto(user));
+                InvalidData.add(user);
+            } else {
+                validData.add(user);
+            }
+        });
+        List<User> users = validData.stream()
                 .map(dtoUtility::toUser)
                 .collect(Collectors.toList());
 
-        List<User> validUsers = users.stream()
-                .map(user -> {
+        List<User> validUsers = new ArrayList<>();
+        List<UserDto> existingUsers = new ArrayList<>();
+        users.stream()
+                .forEach(user -> {
                     this.User_repo.findByEmail(user.getEmail())
-                            .ifPresent(emailUser -> user.setID(emailUser.getID()));
-                    this.User_repo.findByMobile(user.getMobile())
-                            .ifPresent(mobileUser->user.setID(mobileUser.getID()));
-                            user.setDepartment(this.departmentRepo.findByDepartmentCode(user.getDepartment().getDepartmentCode()).get());
-                            user.setUsertype(this.userTypeRepo.findByUserTypeName(user.getUsertype().getUserTypeName()).get());
-                            return user;
-                }).collect(Collectors.toList());
+                            .ifPresentOrElse(emailUser -> existingUsers.add(dtoUtility.toUserDto(user)),
+                                    () -> validUsers.add(user));
+                });
         List<User> dbUsers = this.User_repo.saveAll(validUsers);
 
         List<UserDto> dbUserResponse = dbUsers.stream()
                 .map(dtoUtility::toUserDto)
                 .collect(Collectors.toList());
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(dbUserResponse);
+        Map<String, List<?>> reposneMap = new HashMap<>();
+        if (!validUsers.isEmpty()) {
+            reposneMap.put("Added User-List", dbUserResponse);
+        }
+        if (!existingUsers.isEmpty()) {
+            reposneMap.put("Already Existing-User-List", existingUsers);
+        }
+        if (!InvalidData.isEmpty()) {
+            reposneMap.put("Invalid-Users", InvalidData);
+        }
+        if (validUsers.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.OK).body(reposneMap);
+        }
+        return ResponseEntity.status(HttpStatus.CREATED).body(reposneMap);
     }
-   public ResponseEntity<Resource> getExcelSheet(String keyword) throws
-    Exception {
 
-    List<User> users = this.repoUtil.SearchUser(keyword);
-    List<UserDto> usersdto=users.stream().map(dtoUtility::toUserDto).collect(Collectors.toList());
-    String fileName = "UserData.xlsx";
-    ByteArrayInputStream actualData = fileService.getExcelData(usersdto,UserDto.class);
-    InputStreamResource file = new InputStreamResource(actualData);
-    return ResponseEntity.ok()
-    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName
-    + "\"")
-    .contentType(MediaType.parseMediaType("application/vnd.ms-excel"))
-    .body(file);
+    public ResponseEntity<Resource> getExcelSheet(String keyword) throws Exception {
+
+        List<User> users = this.repoUtil.SearchUser(keyword);
+        List<UserDto> usersdto = users.stream().map(dtoUtility::toUserDto).collect(Collectors.toList());
+        String fileName = "UserData.xlsx";
+        ByteArrayInputStream actualData = fileService.getExcelData(usersdto, UserDto.class);
+        InputStreamResource file = new InputStreamResource(actualData);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName
+                        + "\"")
+                .contentType(MediaType.parseMediaType("application/vnd.ms-excel"))
+                .body(file);
     }
 }

@@ -94,6 +94,9 @@ public class FileService {
             XSSFSheet sheet = workbook.getSheet(workbook.getSheetName(0));
             int rowNumber = 0;
             int lastRowId = sheet.getLastRowNum();
+            if(lastRowId==3){
+                throw new Exception("Empty Excel Sheet");
+            }
 
             while (rowNumber <= lastRowId) {
                 Row row = sheet.getRow(rowNumber);
@@ -262,7 +265,7 @@ public class FileService {
                 if (value != null) {
                     if (value instanceof List) {
                         // Convert list values to comma-separated strings
-                        StringBuilder listString = new StringBuilder();
+                        StringBuffer listString= new StringBuffer();
                         for (Object listItem : (List<?>) value) {
                             listString.append(listItem.toString()).append(",");
                         }
