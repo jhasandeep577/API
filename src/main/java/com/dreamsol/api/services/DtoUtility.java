@@ -4,6 +4,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -26,6 +28,8 @@ import jakarta.validation.Validator;
 
 @Component
 public class DtoUtility {
+    @Autowired
+    PasswordEncoder passwordEncoder;
     private Validator validator;
 
     public <T>Set<String> validateDto(T dto) {
@@ -128,6 +132,7 @@ public class DtoUtility {
         BeanUtils.copyProperties(dto, user);
         user.setDepartment(this.toDepartment(dto.getDepartment()));
         user.setUsertype(this.toUserType(dto.getUsertype()));
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         return user;
     }
 
@@ -181,7 +186,7 @@ public class DtoUtility {
 
     public String toUrl(UserFile file) {
         String url = ServletUriComponentsBuilder.fromCurrentContextPath()
-                .path("/UserManager/download/")
+                .path("/download/")
                 .path("" + file.getGeneratedFileName())
                 .toUriString();
         return url;

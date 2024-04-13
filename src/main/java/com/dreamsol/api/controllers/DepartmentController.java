@@ -30,9 +30,9 @@ import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 
 @RestController
-@RequestMapping("/DepartmentManager")
 @Tag(name = "Department Controller", description = "To Perform Operations On Department")
 @AllArgsConstructor(onConstructor_ = { @Autowired })
+@RequestMapping("/Dreamsol")
 public class DepartmentController {
 
     DepartmentService DepartmentService;
@@ -86,12 +86,12 @@ public class DepartmentController {
         return DepartmentService.deleteDepartment(id);
     }
 
-    @PostMapping(path = "save-Excel-Data")
+    @PostMapping(path = "save-Department-Excel-Data")
     public ResponseEntity<?> saveExcelData(@RequestBody List<DeptExcelDto> listExcelData) {
         return DepartmentService.saveExcelData(listExcelData);
     }
 
-    @GetMapping(path = "download-Excel-Sheet")
+    @GetMapping(path = "download-Department-Excel-Sheet")
     public ResponseEntity<Resource> downloadExcelSheet(
             @RequestParam(value = "keyword", required = false) String keyword) throws Exception {
         return this.DepartmentService.getExcelSheet(keyword);

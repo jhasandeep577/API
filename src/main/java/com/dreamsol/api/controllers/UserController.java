@@ -31,8 +31,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/UserManager")
 @Tag(name = "User Controller", description = "To Perform Operation On User")
+@RequestMapping("/Dreamsol")
 public class UserController {
     @Value("${project.image}")
     String path;
@@ -86,12 +86,12 @@ public class UserController {
         return this.User_service.validateExcelData(exceldata, EntityName);
     }
 
-    @PostMapping(path = "save-Excel-Data")
+    @PostMapping(path = "save-User-Excel-Data")
     public ResponseEntity<?> saveExcelData(@RequestBody List<ExcelDataResponseDto> listExcelData) {
         return this.User_service.saveExcelData(listExcelData);
     }
 
-    @GetMapping(path = "download-Excel-Sheet")
+    @GetMapping(path = "download-User-Excel-Sheet")
     public ResponseEntity<Resource> downloadExcelSheet(
             @RequestParam(value = "keyword", required = false) String keyword) throws Exception {
         return this.User_service.getExcelSheet(keyword);

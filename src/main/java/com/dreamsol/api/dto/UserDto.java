@@ -41,4 +41,5 @@ public class UserDto {
    private String email;
    @Schema(hidden = true)
    private String FileUrl;
+   private String password;
 }

@@ -30,9 +30,9 @@ import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 
 @RestController
-@RequestMapping("/UserTypeManager")
 @Tag(name = "UserType Controller", description = "To Perform Operations On UserType")
 @AllArgsConstructor(onConstructor_ = { @Autowired })
+@RequestMapping("/Dreamsol")
 public class UserTypeController {
     UserTypeService userTypeService;
     FileService file_service;
@@ -85,12 +85,12 @@ public class UserTypeController {
         return userTypeService.deleteUserType(id);
     }
 
-    @PostMapping(path = "save-Excel-Data")
+    @PostMapping(path = "save-UserType-Excel-Data")
     public ResponseEntity<?> saveExcelData(@RequestBody List<UsertypeExcelDto> listExcelData) {
         return userTypeService.saveExcelData(listExcelData);
     }
 
-    @GetMapping(path = "download-Excel-Sheet")
+    @GetMapping(path = "download-UserType--Excel-Sheet")
     public ResponseEntity<Resource> downloadExcelSheet(
             @RequestParam(value = "keyword", required = false) String keyword) throws Exception {
         return this.userTypeService.getExcelSheet(keyword);
