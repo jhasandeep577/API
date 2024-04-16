@@ -32,7 +32,7 @@ import jakarta.validation.Valid;
 
 @RestController
 @Tag(name = "User Controller", description = "To Perform Operation On User")
-@RequestMapping("/Dreamsol")
+@RequestMapping("/User")
 public class UserController {
     @Value("${project.image}")
     String path;
@@ -56,12 +56,6 @@ public class UserController {
     @GetMapping(path = "/fetch-User/{id}")
     public ResponseEntity<UserDto> getUser(@PathVariable int id) {
         return User_service.fetchUser(id, path);
-    }
-
-    @PostMapping(path = "create-User", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<UserDto> createUser(@Valid @RequestPart("UserDto") UserDto user,
-            @RequestParam("image") MultipartFile file) throws Exception {
-        return User_service.addUser(user, file, path);
     }
 
     @PutMapping(path = "update-User/{id}")

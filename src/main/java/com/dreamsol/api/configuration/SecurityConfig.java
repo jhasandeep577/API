@@ -30,16 +30,18 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
-        http.csrf(csrf -> csrf.disable())
+        http.csrf(csrf -> csrf.disable()) 
                 .cors(cors -> cors.disable())
                 .authorizeHttpRequests(
-                        auth -> auth.requestMatchers("/Dreamsol/**").authenticated()
-                                .requestMatchers("/login", "/create-User/**","/swagger-ui/**", "/v3/api-docs/**")
-                                .permitAll().anyRequest().authenticated())
+                        auth ->
+                                auth.requestMatchers("/auth/**","/swagger-ui/**", "/v3/api-docs/**")
+                                .permitAll()
+                                .requestMatchers("/Department/**").hasAnyAuthority("admin","Admin","ADMIN")
+                                .requestMatchers("/User-Type/**").hasAnyAuthority("admin","Admin","AMDIN")
+                                .anyRequest().authenticated())
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(entryPoint))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         http.addFilterBefore(filter, UsernamePasswordAuthenticationFilter.class);
-
         return http.build();
     }
 

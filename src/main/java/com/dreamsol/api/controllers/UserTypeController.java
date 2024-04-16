@@ -32,7 +32,7 @@ import lombok.AllArgsConstructor;
 @RestController
 @Tag(name = "UserType Controller", description = "To Perform Operations On UserType")
 @AllArgsConstructor(onConstructor_ = { @Autowired })
-@RequestMapping("/Dreamsol")
+@RequestMapping("/User-Type")
 public class UserTypeController {
     UserTypeService userTypeService;
     FileService file_service;

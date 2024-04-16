@@ -32,7 +32,7 @@ import lombok.AllArgsConstructor;
 @RestController
 @Tag(name = "Department Controller", description = "To Perform Operations On Department")
 @AllArgsConstructor(onConstructor_ = { @Autowired })
-@RequestMapping("/Dreamsol")
+@RequestMapping("/Department")
 public class DepartmentController {
 
     DepartmentService DepartmentService;

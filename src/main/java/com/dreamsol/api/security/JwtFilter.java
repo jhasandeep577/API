@@ -18,6 +18,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
 @Component
 public class JwtFilter extends OncePerRequestFilter {
     private Logger logger = LoggerFactory.getLogger(OncePerRequestFilter.class);
@@ -29,11 +30,7 @@ public class JwtFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException, java.io.IOException {
-
-        // Authorization
-
         String requestHeader = request.getHeader("Authorization");
-        // Bearer 2352345235sdfrsfgsdfsdf
         logger.info(" Header :  {}", requestHeader);
         String username = null;
         String token = null;
@@ -43,7 +40,7 @@ public class JwtFilter extends OncePerRequestFilter {
             try {
                 username = this.jwtUtility.getUsernameFormToken(token);
             } catch (IllegalArgumentException e) {
-                logger.info("Illegal Argument while fetching the  username !!");
+                logger.info("Illegal Argument while fetching the username !!");
                 e.printStackTrace();
             } catch (ExpiredJwtException e) {
                 logger.info("Given jwt token is expired !!");
@@ -72,6 +69,7 @@ public class JwtFilter extends OncePerRequestFilter {
             }
         }
         filterChain.doFilter(request, response);
+        System.out.println(logger);
     }
 
 }
