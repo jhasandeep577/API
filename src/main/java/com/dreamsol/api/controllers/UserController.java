@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -33,6 +34,7 @@ import jakarta.validation.Valid;
 @RestController
 @Tag(name = "User Controller", description = "To Perform Operation On User")
 @RequestMapping("/User")
+
 public class UserController {
     @Value("${project.image}")
     String path;
@@ -42,7 +44,7 @@ public class UserController {
     FileService file_service;
     @Autowired
     DtoUtility utility;
-
+    
     @GetMapping(path = "/fetch-all-Users")
     public ResponseEntity<PageResponse> getAllUser(
             @RequestParam(value = "pageNumber", defaultValue = "0", required = false) int pageNumber,

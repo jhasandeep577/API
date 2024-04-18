@@ -32,6 +32,8 @@ public class UserDto {
    @NotNull(message = "UserType cannot be Empty")
    @Valid
    private UserTypeDto usertype;
+   @Valid
+   private UserPermissionDto permission;
    @Min(message = "Not Valid phone Number", value = 6000000000l)
    @Max(message = "Not Valid phone Number", value = 9999999999l)
    private long mobile;

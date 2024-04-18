@@ -36,11 +36,14 @@ import com.dreamsol.api.exceptionhandler.customexceptions.ResourceAlreadyExist;
 import com.dreamsol.api.exceptionhandler.customexceptions.ResourceNotFoundException;
 import com.dreamsol.api.repositories.DepartmentRepo;
 import com.dreamsol.api.repositories.UserFileRepo;
+import com.dreamsol.api.repositories.UserPermissionRepo;
 import com.dreamsol.api.repositories.UserRepository;
 import com.dreamsol.api.repositories.UserTypeRepo;
 
 @Service
 public class UserServiceImpl implements UserService {
+    @Autowired
+    UserPermissionRepo userPermissionRepo;
     @Autowired
     UserFileRepo userFileRepo;
     @Autowired
@@ -112,11 +115,19 @@ public class UserServiceImpl implements UserService {
                     this.departmentRepo.findByDepartmentCode(user.getDepartment().getDepartmentCode()).get());
             if (this.userTypeRepo.findByUserTypeName(user.getUsertype().getUserTypeName()).isPresent()) {
                 dbuser.setUsertype(this.userTypeRepo.findByUserTypeName(user.getUsertype().getUserTypeName()).get());
-                dbuser.setFile(uploadfile(file, path));
-                // ^ Saving file on server and getting its randomly generated name
-                User NewDbUser = this.User_repo.save(dbuser);
-                UserDto dtouser = this.dtoUtility.toUserDto(NewDbUser);
-                return ResponseEntity.status(HttpStatus.CREATED).body(dtouser);
+
+                if (this.userPermissionRepo.findByPermission(user.getPermission().getPermission()).isPresent()) {
+                    dbuser.setPermission(
+                            this.userPermissionRepo.findByPermission(user.getPermission().getPermission()).get());
+                    dbuser.setFile(uploadfile(file, path));
+                    // ^ Saving file on server and getting its randomly generated name
+                    User NewDbUser = this.User_repo.save(dbuser);
+                    UserDto dtouser = this.dtoUtility.toUserDto(NewDbUser);
+                    return ResponseEntity.status(HttpStatus.CREATED).body(dtouser);
+                } else {
+                    throw new Exception("Provide a Valid UserPermission");
+                }
+
             } else {
                 throw new Exception("Provide a Valid UserType");
             }
@@ -139,11 +150,15 @@ public class UserServiceImpl implements UserService {
             throw new ResourceAlreadyExist(dbuser.getEmail(), "Email");
         } else if (this.departmentRepo.findByDepartmentCode(user.getDepartment().getDepartmentCode()).isPresent()) {
             if (this.userTypeRepo.findByUserTypeName(user.getUsertype().getUserTypeName()).isPresent()) {
-                dbuser.setFile(uploadfile(file, path));
-                // ^ Saving file on server and getting its randomly generated name
-                User NewDbUser = this.User_repo.save(dbuser);
-                UserDto dtouser = this.dtoUtility.toUserDto(NewDbUser);
-                return ResponseEntity.status(HttpStatus.CREATED).body(dtouser);
+                if (this.userPermissionRepo.findByPermission(user.getPermission().getPermission()).isPresent()) {
+                    dbuser.setFile(uploadfile(file, path));
+                    // ^ Saving file on server and getting its randomly generated name
+                    User NewDbUser = this.User_repo.save(dbuser);
+                    UserDto dtouser = this.dtoUtility.toUserDto(NewDbUser);
+                    return ResponseEntity.status(HttpStatus.CREATED).body(dtouser);
+                } else {
+                    throw new Exception("Provide a valid UserPermission");
+                }
             } else {
                 throw new Exception("Provide a Valid UserType");
             }
@@ -227,10 +242,10 @@ public class UserServiceImpl implements UserService {
             });
 
             Map<String, Object> response = new HashMap<>();
-            if(!validData.isEmpty()){
+            if (!validData.isEmpty()) {
                 response.put("ValidData", validData);
             }
-            if(!invalidData.isEmpty()){
+            if (!invalidData.isEmpty()) {
                 response.put("InvalidData", invalidData);
             }
             return ResponseEntity.ok(response);

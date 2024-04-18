@@ -13,13 +13,17 @@ import com.dreamsol.api.dto.DepartmentDto;
 import com.dreamsol.api.dto.DepartmentUserDto;
 import com.dreamsol.api.dto.DeptExcelDto;
 import com.dreamsol.api.dto.ExcelDataResponseDto;
+import com.dreamsol.api.dto.RefreshTokenRequest;
 import com.dreamsol.api.dto.UserDto;
+import com.dreamsol.api.dto.UserPermissionDto;
 import com.dreamsol.api.dto.UserTypeDto;
 import com.dreamsol.api.dto.UserTypeUserDto;
 import com.dreamsol.api.dto.UsertypeExcelDto;
 import com.dreamsol.api.entities.Department;
+import com.dreamsol.api.entities.RefreshToken;
 import com.dreamsol.api.entities.User;
 import com.dreamsol.api.entities.UserFile;
+import com.dreamsol.api.entities.UserPermission;
 import com.dreamsol.api.entities.UserType;
 
 import jakarta.validation.ConstraintViolation;
@@ -133,9 +137,19 @@ public class DtoUtility {
         user.setDepartment(this.toDepartment(dto.getDepartment()));
         user.setUsertype(this.toUserType(dto.getUsertype()));
         user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setPermission(this.toUserPermission(dto.getPermission()));
         return user;
     }
-
+      public RefreshTokenRequest toRefreshTokenRequest(RefreshToken token){
+         RefreshTokenRequest refreshToken=new RefreshTokenRequest();
+         BeanUtils.copyProperties(token, refreshToken);
+         return refreshToken;
+      }
+      public RefreshToken toRefreshToken(RefreshTokenRequest refreshToken){
+        RefreshToken token = new RefreshToken();
+        BeanUtils.copyProperties(refreshToken, token);
+        return token;
+      }
     public UserDto toUserDto(User user) {
         UserDto dto = new UserDto();
         BeanUtils.copyProperties(user, dto);
@@ -147,6 +161,9 @@ public class DtoUtility {
         }
         if(user.getUsertype()!=null){
             dto.setUsertype(this.toUserTypeDto(user.getUsertype()));
+        }
+        if(user.getPermission()!=null){
+            dto.setPermission(this.toUserPermissionDto(user.getPermission()));
         }
         return dto;
     }
@@ -176,6 +193,16 @@ public class DtoUtility {
         BeanUtils.copyProperties(dto, usertype);
         return usertype;
     }
+    public UserPermission toUserPermission(UserPermissionDto dto){
+        UserPermission permission=new UserPermission();
+        BeanUtils.copyProperties(dto, permission);
+        return permission;
+    }
+    public UserPermissionDto toUserPermissionDto(UserPermission permission){
+        UserPermissionDto dto=new UserPermissionDto();
+        BeanUtils.copyProperties(permission, dto);
+        return dto;
+    }
     public User toUser(ExcelDataResponseDto dto) {
         User user = new User();
         BeanUtils.copyProperties(dto, user);
@@ -186,7 +213,7 @@ public class DtoUtility {
 
     public String toUrl(UserFile file) {
         String url = ServletUriComponentsBuilder.fromCurrentContextPath()
-                .path("/download/")
+                .path("/User/download/")
                 .path("" + file.getGeneratedFileName())
                 .toUriString();
         return url;

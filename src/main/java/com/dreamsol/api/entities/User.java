@@ -48,10 +48,16 @@ public class User implements UserDetails{
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name = "fileId")
     private UserFile file;
+    // @OneToOne(cascade = CascadeType.ALL,fetch = FetchType.EAGER)
+    // @JoinColumn(name="token")
+    // private RefreshToken token;
     private String password;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "permssion")
+    private UserPermission permission;
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority(usertype.getUserTypeName()));
+        return List.of(new SimpleGrantedAuthority(usertype.getUserTypeName()),new SimpleGrantedAuthority(permission.getPermission()));
     }
     @Override
     public String getUsername() {

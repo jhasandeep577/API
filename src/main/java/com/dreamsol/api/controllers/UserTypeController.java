@@ -7,6 +7,7 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -33,6 +34,7 @@ import lombok.AllArgsConstructor;
 @Tag(name = "UserType Controller", description = "To Perform Operations On UserType")
 @AllArgsConstructor(onConstructor_ = { @Autowired })
 @RequestMapping("/User-Type")
+@PreAuthorize("hasAuthority('Admin')")
 public class UserTypeController {
     UserTypeService userTypeService;
     FileService file_service;
@@ -90,7 +92,7 @@ public class UserTypeController {
         return userTypeService.saveExcelData(listExcelData);
     }
 
-    @GetMapping(path = "download-UserType--Excel-Sheet")
+    @GetMapping(path = "download-UserType-Excel-Sheet")
     public ResponseEntity<Resource> downloadExcelSheet(
             @RequestParam(value = "keyword", required = false) String keyword) throws Exception {
         return this.userTypeService.getExcelSheet(keyword);

@@ -3,6 +3,7 @@ package com.dreamsol.api.configuration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -36,8 +37,11 @@ public class SecurityConfig {
                         auth ->
                                 auth.requestMatchers("/auth/**","/swagger-ui/**", "/v3/api-docs/**")
                                 .permitAll()
-                                .requestMatchers("/Department/**").hasAnyAuthority("admin","Admin","ADMIN")
-                                .requestMatchers("/User-Type/**").hasAnyAuthority("admin","Admin","AMDIN")
+                                // .requestMatchers("/Department/**","/User-Type/**","/User-Permission/**").hasAuthority("Admin")
+                                .requestMatchers(HttpMethod.DELETE).hasAuthority("ALL")
+                                .requestMatchers(HttpMethod.POST).hasAuthority("ALL")
+                                .requestMatchers(HttpMethod.PUT).hasAuthority("ALL")
+                                .requestMatchers(HttpMethod.GET).hasAnyAuthority("READ","ALL")
                                 .anyRequest().authenticated())
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(entryPoint))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));

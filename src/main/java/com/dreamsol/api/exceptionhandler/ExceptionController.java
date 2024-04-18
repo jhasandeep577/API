@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -14,15 +15,11 @@ import com.dreamsol.api.exceptionhandler.customexceptions.NoContentFoundExceptio
 import com.dreamsol.api.exceptionhandler.customexceptions.ResourceAlreadyExist;
 import com.dreamsol.api.exceptionhandler.customexceptions.ResourceNotFoundException;
 
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.MalformedJwtException;
+
 @ControllerAdvice
 public class ExceptionController {
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String, String>> defException(Exception exception) {
-        Map<String, String> errorMessage = new HashMap<String, String>();
-        exception.printStackTrace();
-        errorMessage.put("error", exception.getMessage());
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
-    }
 
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<Map<String, String>> notFound(ResourceNotFoundException exception) {
@@ -69,4 +66,37 @@ public class ExceptionController {
         errorMessage.put("error", exception.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
     }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<Map<String, String>> accessDeniedException(AccessDeniedException exception) {
+        Map<String, String> errorMessage = new HashMap<String, String>();
+        errorMessage.put("Unauthorized Request", exception.getMessage());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorMessage);
+    }
+    @ExceptionHandler(ExpiredJwtException.class)
+    public ResponseEntity<Map<String, String>> jwtTokenException(ExpiredJwtException exception) {
+        Map<String, String> errorMessage = new HashMap<String, String>();
+        errorMessage.put("Unauthorized Request", "JWT Token has Expired");
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorMessage);
+    }
+    @ExceptionHandler(MalformedJwtException.class)
+    public ResponseEntity<Map<String, String>> jwtTokenException(MalformedJwtException exception) {
+        Map<String, String> errorMessage = new HashMap<String, String>();
+        errorMessage.put("Unauthorized Request", "Malicious JWt Token not acceptable");
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorMessage);
+    }
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<Map<String, String>> jwtTokenException(IllegalStateException exception) {
+        Map<String, String> errorMessage = new HashMap<String, String>();
+        errorMessage.put("Unauthorized Request", exception.getMessage());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorMessage);
+    }
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Map<String, String>> defException(Exception exception) {
+        Map<String, String> errorMessage = new HashMap<String, String>();
+        exception.printStackTrace();
+        errorMessage.put("error", exception.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+    }
+
 }

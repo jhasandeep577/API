@@ -17,7 +17,7 @@ import io.jsonwebtoken.security.Keys;
 
 @Component
 public class JwtUtility {
-    public static final long JWT_TOKEN_VALIDITY = 5 * 60 * 60;
+    public static final long JWT_TOKEN_VALIDITY = 5 * 60 * 60; // 18000=18sec
     private String secret = "kjbwdlubdcueuhcqjhbubcluecljhqdcuvdcqHSHSUSuheuycjqhdjNJSUSSUYVSYUVYTCCTRXKIOUTWKJHFTRCUYVFugduywvecuyqevcjhquyvcjqhdcyvcubybu";
 
     public String getUsernameFormToken(String token) {
@@ -51,14 +51,14 @@ public class JwtUtility {
     private String doGenerateToken(Map<String, Object> claims, String subject) {
 
         return Jwts.builder().setClaims(claims).setSubject(subject).setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + JWT_TOKEN_VALIDITY * 100))
+                .setExpiration(new Date(System.currentTimeMillis() + JWT_TOKEN_VALIDITY ))    // 18sec*60*10 = 180m or 3hr
                 .signWith(getSigninKey(), SignatureAlgorithm.HS512)
                 .compact();
     }
-    public String doGenerateRefreshToken(Map<String, Object> extraclaims, String subject) {   // subject is username
+    public String doGenerateRefreshToken(Map<String, Object> extraclaims, String subject) {            // subject is username
 
         return Jwts.builder().setClaims(extraclaims).setSubject(subject).setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + JWT_TOKEN_VALIDITY * 1000))
+                .setExpiration(new Date(System.currentTimeMillis() + JWT_TOKEN_VALIDITY * 60 * 1000))   // 18sec*60*1000 = 18000m or 300hr or approx 12Days
                 .signWith(getSigninKey(), SignatureAlgorithm.HS512)
                 .compact();
     }
