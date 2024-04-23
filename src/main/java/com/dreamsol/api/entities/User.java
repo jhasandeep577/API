@@ -15,6 +15,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import lombok.AllArgsConstructor;
@@ -48,9 +50,9 @@ public class User implements UserDetails{
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name = "fileId")
     private UserFile file;
-    // @OneToOne(cascade = CascadeType.ALL,fetch = FetchType.EAGER)
-    // @JoinColumn(name="token")
-    // private RefreshToken token;
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name="authorizedEndPoints",joinColumns = @JoinColumn(name="userId"),inverseJoinColumns = @JoinColumn(name="endPointId"))
+    private List<EndPoint> AuthorizedEndpoints;
     private String password;
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "permssion")

@@ -1,5 +1,7 @@
 package com.dreamsol.api.dto;
 
+import java.util.List;
+
 import org.springframework.validation.annotation.Validated;
 
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -41,7 +43,9 @@ public class UserDto {
    @Email(message = "Not a Valid email")
    @Size(max = 50, message = "Length of email cannot be more than 50")
    private String email;
+   private String password;
    @Schema(hidden = true)
    private String FileUrl;
-   private String password;
+   @Schema(hidden = true)
+   private List<EndPointDto> endPoints;
 }

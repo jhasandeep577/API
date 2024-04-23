@@ -10,7 +10,6 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -53,13 +52,13 @@ public class SecurityConfig {
         return security.build();
     }
 
-    @Bean
-    public DaoAuthenticationProvider daoAuthenticationProvider() {
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-        provider.setUserDetailsService(userDetailService);
-        provider.setPasswordEncoder(passwordEncoder);
-        return provider;
-    }
+    // @Bean
+    // public DaoAuthenticationProvider daoAuthenticationProvider() {
+    //     DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+    //         provider.setUserDetailsService(userDetailService);
+    //         provider.setPasswordEncoder(passwordEncoder);
+    //     return provider;
+    // }
 
     private String[] getAuthorizedUrls() {
         if (SecurityContextHolder.getContext().getAuthentication() != null) {
@@ -188,6 +187,7 @@ public class SecurityConfig {
         apiMap.put("UserPermissionDelete", "/User-Permission/delete-UserPermission/*");
         apiMap.put("UserPermissionUpdate", "/User-Permission/update-UserPermission/*");
         apiMap.put("UserPermissionCreate", "/User-Permission/create-UserPermission");
+        apiMap.put("UserPermissionAddEndPoint", "/User-Permission/add-Endpoint");
         return apiMap;
     }
 }

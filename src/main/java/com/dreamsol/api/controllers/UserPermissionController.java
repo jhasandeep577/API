@@ -1,6 +1,8 @@
 package com.dreamsol.api.controllers;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,8 +18,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.dreamsol.api.configuration.SecurityConfig;
 import com.dreamsol.api.dto.PageResponse;
 import com.dreamsol.api.dto.UserPermissionDto;
+import com.dreamsol.api.entities.EndPoint;
 import com.dreamsol.api.services.DtoUtility;
 import com.dreamsol.api.services.FileService;
 import com.dreamsol.api.services.UserPermissionService;
@@ -32,7 +36,7 @@ import lombok.AllArgsConstructor;
 @RequestMapping("/User-Permission")
 @PreAuthorize("hasAuthority('Admin')")
 public class UserPermissionController {
-
+    SecurityConfig sc;
     UserPermissionService service;
     FileService file_service;
     DtoUtility utility;
@@ -67,5 +71,18 @@ public class UserPermissionController {
     @DeleteMapping(path = "delete-Permission/{id}")
     public ResponseEntity<Map<String, String>> deletePermission(@PathVariable int id) {
         return service.deletePermission(id);
+    }
+
+    @PostMapping(path = "add-Endpoint")
+    public ResponseEntity<?> addEndpoints(){
+        List<EndPoint> li=new ArrayList<>();
+       Map<String,String> endpoint=sc.getApifromKey();
+       for(String key:endpoint.keySet()){
+          EndPoint ep=new EndPoint();
+          ep.setId(key);
+          ep.setEndpoint(endpoint.get(key));
+          li.add(ep);
+       }
+        return service.addEndpoints(li);
     }
 }

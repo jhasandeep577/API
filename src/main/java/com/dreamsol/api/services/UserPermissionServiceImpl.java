@@ -16,11 +16,12 @@ import org.springframework.stereotype.Service;
 
 import com.dreamsol.api.dto.PageResponse;
 import com.dreamsol.api.dto.UserPermissionDto;
+import com.dreamsol.api.entities.EndPoint;
 import com.dreamsol.api.entities.UserPermission;
 import com.dreamsol.api.exceptionhandler.customexceptions.NoContentFoundException;
 import com.dreamsol.api.exceptionhandler.customexceptions.ResourceAlreadyExist;
 import com.dreamsol.api.exceptionhandler.customexceptions.ResourceNotFoundException;
-
+import com.dreamsol.api.repositories.EndPointRepo;
 import com.dreamsol.api.repositories.UserPermissionRepo;
 
 @Service
@@ -30,7 +31,8 @@ public class UserPermissionServiceImpl implements UserPermissionService {
     UserPermissionRepo permissionRepo;
     @Autowired
     DtoUtility dtoUtility;
-
+    @Autowired
+    EndPointRepo endPointRepo;
     @Autowired
     @Qualifier("Message")
     Map<String, String> message;
@@ -94,5 +96,10 @@ public class UserPermissionServiceImpl implements UserPermissionService {
         permissionRepo.delete(userPermission);
         message.put("message", "Permission has been deleted");
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(message);
+    }
+    public ResponseEntity<?> addEndpoints(List<EndPoint> endpointList){
+      //  List<EndPoint> endpoints=dtoUtility.toListEndPoint(endpointList);
+        List<EndPoint> dbEndPoints=endPointRepo.saveAll(endpointList);
+        return ResponseEntity.status(HttpStatus.OK).body(dtoUtility.toListEndPointDto(dbEndPoints));
     }
 }

@@ -29,12 +29,14 @@ import com.dreamsol.api.dto.ExcelDataResponseDto;
 import com.dreamsol.api.dto.PageResponse;
 import com.dreamsol.api.dto.UserDto;
 import com.dreamsol.api.dto.UserTypeDto;
+import com.dreamsol.api.entities.EndPoint;
 import com.dreamsol.api.entities.User;
 import com.dreamsol.api.entities.UserFile;
 import com.dreamsol.api.exceptionhandler.customexceptions.NoContentFoundException;
 import com.dreamsol.api.exceptionhandler.customexceptions.ResourceAlreadyExist;
 import com.dreamsol.api.exceptionhandler.customexceptions.ResourceNotFoundException;
 import com.dreamsol.api.repositories.DepartmentRepo;
+import com.dreamsol.api.repositories.EndPointRepo;
 import com.dreamsol.api.repositories.UserFileRepo;
 import com.dreamsol.api.repositories.UserPermissionRepo;
 import com.dreamsol.api.repositories.UserRepository;
@@ -70,7 +72,10 @@ public class UserServiceImpl implements UserService {
     @Autowired
     @Qualifier("UserTypeMap")
     Map<String, String> UserTypeMap;
-
+    @Autowired
+    EndPointUtility endPointUtility;
+    @Autowired
+    EndPointRepo endPointRepo;
     public ResponseEntity<PageResponse> fetchAllUser(int PageNumber, int PageSize, String SortBy, String sortDir,
             String filter, String path) {
 
@@ -121,13 +126,23 @@ public class UserServiceImpl implements UserService {
                             this.userPermissionRepo.findByPermission(user.getPermission().getPermission()).get());
                     dbuser.setFile(uploadfile(file, path));
                     // ^ Saving file on server and getting its randomly generated name
+                    String [] endpoints=  endPointUtility.getAuthorizedUrls(List.of(dbuser.getUsertype().getUserTypeName(),dbuser.getPermission().getPermission()));
+                    // Wokring on Endpoints DB Logic
+                    List<EndPoint> listEndPoints=new ArrayList<>();
+                    for(int x=0;x<endpoints.length;x++){
+                      if(endPointRepo.findByEndpoint(endpoints[x]).isPresent()){
+                         listEndPoints.add((endPointRepo.findByEndpoint(endpoints[x])).get());
+                      }
+                    }
+                    if(listEndPoints!=null){
+                        dbuser.setAuthorizedEndpoints(listEndPoints);
+                    }
                     User NewDbUser = this.User_repo.save(dbuser);
                     UserDto dtouser = this.dtoUtility.toUserDto(NewDbUser);
                     return ResponseEntity.status(HttpStatus.CREATED).body(dtouser);
                 } else {
                     throw new Exception("Provide a Valid UserPermission");
                 }
-
             } else {
                 throw new Exception("Provide a Valid UserType");
             }

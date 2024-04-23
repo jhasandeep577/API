@@ -1,5 +1,6 @@
 package com.dreamsol.api.services;
 
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -12,6 +13,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import com.dreamsol.api.dto.DepartmentDto;
 import com.dreamsol.api.dto.DepartmentUserDto;
 import com.dreamsol.api.dto.DeptExcelDto;
+import com.dreamsol.api.dto.EndPointDto;
 import com.dreamsol.api.dto.ExcelDataResponseDto;
 import com.dreamsol.api.dto.RefreshTokenRequest;
 import com.dreamsol.api.dto.UserDto;
@@ -20,6 +22,7 @@ import com.dreamsol.api.dto.UserTypeDto;
 import com.dreamsol.api.dto.UserTypeUserDto;
 import com.dreamsol.api.dto.UsertypeExcelDto;
 import com.dreamsol.api.entities.Department;
+import com.dreamsol.api.entities.EndPoint;
 import com.dreamsol.api.entities.RefreshToken;
 import com.dreamsol.api.entities.User;
 import com.dreamsol.api.entities.UserFile;
@@ -36,7 +39,7 @@ public class DtoUtility {
     PasswordEncoder passwordEncoder;
     private Validator validator;
 
-    public <T>Set<String> validateDto(T dto) {
+    public <T> Set<String> validateDto(T dto) {
         this.validator = Validation.buildDefaultValidatorFactory().getValidator();
         Set<ConstraintViolation<T>> violations = validator.validate(dto);
         Set<String> failedValidations = violations.stream().map((violation) -> {
@@ -46,7 +49,7 @@ public class DtoUtility {
         return failedValidations;
     }
 
-    public <T>boolean validateDtoBool(T dto) {
+    public <T> boolean validateDtoBool(T dto) {
         this.validator = Validation.buildDefaultValidatorFactory().getValidator();
         Set<ConstraintViolation<T>> violations = validator.validate(dto);
         if (violations.isEmpty()) {
@@ -55,6 +58,7 @@ public class DtoUtility {
             return false;
         }
     }
+
     public Object toValidExcelDto(Object dto, String entityName) {
         switch (entityName.toLowerCase()) {
             case "user":
@@ -67,6 +71,7 @@ public class DtoUtility {
                 throw new IllegalArgumentException("Enter a valid entity name");
         }
     }
+
     public Object toInvalidExcelDto(Object dto, String entityName) {
         switch (entityName.toLowerCase()) {
             case "user":
@@ -88,15 +93,16 @@ public class DtoUtility {
                 throw new IllegalArgumentException("Enter a valid entity name");
         }
     }
-   public UserTypeUserDto toUserTypeUserDto(UserType usertype){
-       UserTypeUserDto dto= new UserTypeUserDto();
-       BeanUtils.copyProperties(usertype, dto);
-       Set<UserDto> usersdto=usertype.getUsers().stream().map((user)->{
-         return this.toUserDto(user);
-       }).collect(Collectors.toSet());
-       dto.setUsers(usersdto);
-       return dto;
-   } 
+
+    public UserTypeUserDto toUserTypeUserDto(UserType usertype) {
+        UserTypeUserDto dto = new UserTypeUserDto();
+        BeanUtils.copyProperties(usertype, dto);
+        Set<UserDto> usersdto = usertype.getUsers().stream().map((user) -> {
+            return this.toUserDto(user);
+        }).collect(Collectors.toSet());
+        dto.setUsers(usersdto);
+        return dto;
+    }
 
     public UserType toUserType(UserTypeDto dto) {
         UserType usertype = new UserType();
@@ -121,11 +127,12 @@ public class DtoUtility {
         BeanUtils.copyProperties(department, dto);
         return dto;
     }
+
     public DepartmentUserDto toDepartmentUserDto(Department department) {
         DepartmentUserDto dto = new DepartmentUserDto();
         BeanUtils.copyProperties(department, dto);
-        Set<UserDto> users=department.getUsers().stream().map((user)->{
-          return this.toUserDto(user);
+        Set<UserDto> users = department.getUsers().stream().map((user) -> {
+            return this.toUserDto(user);
         }).collect(Collectors.toSet());
         dto.setUsers(users);
         return dto;
@@ -138,18 +145,22 @@ public class DtoUtility {
         user.setUsertype(this.toUserType(dto.getUsertype()));
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setPermission(this.toUserPermission(dto.getPermission()));
+        // user.setAuthorizedEndpoints(this.toListEndPoint(dto.getEndPoints()));
         return user;
     }
-      public RefreshTokenRequest toRefreshTokenRequest(RefreshToken token){
-         RefreshTokenRequest refreshToken=new RefreshTokenRequest();
-         BeanUtils.copyProperties(token, refreshToken);
-         return refreshToken;
-      }
-      public RefreshToken toRefreshToken(RefreshTokenRequest refreshToken){
+
+    public RefreshTokenRequest toRefreshTokenRequest(RefreshToken token) {
+        RefreshTokenRequest refreshToken = new RefreshTokenRequest();
+        BeanUtils.copyProperties(token, refreshToken);
+        return refreshToken;
+    }
+
+    public RefreshToken toRefreshToken(RefreshTokenRequest refreshToken) {
         RefreshToken token = new RefreshToken();
         BeanUtils.copyProperties(refreshToken, token);
         return token;
-      }
+    }
+
     public UserDto toUserDto(User user) {
         UserDto dto = new UserDto();
         BeanUtils.copyProperties(user, dto);
@@ -159,11 +170,14 @@ public class DtoUtility {
         if (user.getDepartment() != null) {
             dto.setDepartment(this.toDepartmentDto(user.getDepartment()));
         }
-        if(user.getUsertype()!=null){
+        if (user.getUsertype() != null) {
             dto.setUsertype(this.toUserTypeDto(user.getUsertype()));
         }
-        if(user.getPermission()!=null){
+        if (user.getPermission() != null) {
             dto.setPermission(this.toUserPermissionDto(user.getPermission()));
+        }
+        if (user.getAuthorizedEndpoints() != null) {
+            dto.setEndPoints(this.toListEndPointDto(user.getAuthorizedEndpoints()));
         }
         return dto;
     }
@@ -173,42 +187,73 @@ public class DtoUtility {
         BeanUtils.copyProperties(userdto, exceldto);
         return exceldto;
     }
+
     public DeptExcelDto toDeptExcelDto(DepartmentDto deptDto) {
         DeptExcelDto exceldto = new DeptExcelDto();
         BeanUtils.copyProperties(deptDto, exceldto);
         return exceldto;
     }
-    public Department toDepartment(DeptExcelDto dto){
-        Department department= new Department();
+
+    public Department toDepartment(DeptExcelDto dto) {
+        Department department = new Department();
         BeanUtils.copyProperties(dto, department);
         return department;
     }
+
     public UsertypeExcelDto toUserTypeExcelDto(UserTypeDto deptDto) {
         UsertypeExcelDto exceldto = new UsertypeExcelDto();
         BeanUtils.copyProperties(deptDto, exceldto);
         return exceldto;
     }
-    public UserType toUserType(UsertypeExcelDto dto){
-        UserType usertype= new UserType();
+
+    public UserType toUserType(UsertypeExcelDto dto) {
+        UserType usertype = new UserType();
         BeanUtils.copyProperties(dto, usertype);
         return usertype;
     }
-    public UserPermission toUserPermission(UserPermissionDto dto){
-        UserPermission permission=new UserPermission();
+
+    public UserPermission toUserPermission(UserPermissionDto dto) {
+        UserPermission permission = new UserPermission();
         BeanUtils.copyProperties(dto, permission);
         return permission;
     }
-    public UserPermissionDto toUserPermissionDto(UserPermission permission){
-        UserPermissionDto dto=new UserPermissionDto();
+
+    public UserPermissionDto toUserPermissionDto(UserPermission permission) {
+        UserPermissionDto dto = new UserPermissionDto();
         BeanUtils.copyProperties(permission, dto);
         return dto;
     }
+
     public User toUser(ExcelDataResponseDto dto) {
         User user = new User();
         BeanUtils.copyProperties(dto, user);
         user.setDepartment(this.toDepartment(dto.getDepartment()));
         user.setUsertype(this.toUserType(dto.getUsertype()));
         return user;
+    }
+
+    public EndPoint toEndPoint(EndPointDto dto) {
+        EndPoint endpoint = new EndPoint();
+        BeanUtils.copyProperties(dto, endpoint);
+        return endpoint;
+    }
+
+    public EndPointDto tEndPointDto(EndPoint endPoint) {
+        EndPointDto dto = new EndPointDto();
+        BeanUtils.copyProperties(endPoint, dto);
+        return dto;
+    }
+
+    public List<EndPoint> toListEndPoint(List<EndPointDto> dtos) {
+        List<EndPoint> endpoints = dtos.stream().map(endpointdto -> this.toEndPoint(endpointdto))
+                .collect(Collectors.toList());
+        return endpoints;
+    }
+
+    public List<EndPointDto> toListEndPointDto(List<EndPoint> points) {
+        List<EndPointDto> endpointsDto = points.stream().map(endpoint -> this.tEndPointDto(endpoint))
+                .collect(Collectors.toList());
+        return endpointsDto;
     }
 
     public String toUrl(UserFile file) {

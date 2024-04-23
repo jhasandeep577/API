@@ -72,7 +72,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .build();
         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                 userDetails, null, userDetails.getAuthorities());
-        // System.out.println(userDetails+" "+userDetails.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(authentication);
         config.updateSecurity();
         return new ResponseEntity<>(response, HttpStatus.OK);
@@ -81,8 +80,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private void doAuthenticate(String username, String password) {
         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(username,
                 password);
-        try {
-            manager.authenticate(authentication);
+        try { 
+            manager.authenticate(authentication);    // It calls loadUserByUsername of UserDetailService method 
         } catch (BadCredentialsException e) {
             throw new BadCredentialsException(" Invalid Username or Password !!");
         }
