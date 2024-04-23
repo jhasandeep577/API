@@ -6,11 +6,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.dreamsol.api.configuration.SecurityConfig;
 import com.dreamsol.api.dto.JwtRequest;
 import com.dreamsol.api.dto.JwtResponse;
 import com.dreamsol.api.dto.RefreshTokenRequest;
@@ -34,12 +36,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private JwtUtility helper;
     @Autowired
     RefreshTokenService refreshTokenService;
-    
+    @Autowired
+    SecurityConfig config;
 
     @Override
     public ResponseEntity<JwtResponse> getToken(RefreshTokenRequest request) {
-        RefreshToken dbToken =refreshTokenService.fromToken(request);
-        String userName=dbToken.getUserEmail();
+        RefreshToken dbToken = refreshTokenService.fromToken(request);
+        String userName = dbToken.getUserEmail();
         UserDetails userDetails = userDetailsService.loadUserByUsername(userName);
         String jwtToken = refreshTokenService.createJwtToken(request, userDetails);
         if (jwtToken == null) {
@@ -47,12 +50,12 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         }
         JwtResponse response = JwtResponse.builder()
                 .jwtToken(jwtToken)
-                .refreshToken(request).build();
+                .refreshToken(dtoUtility.toRefreshTokenRequest(dbToken)).build();
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @Override
-    public ResponseEntity<UserDto> createUser(@Valid UserDto user, MultipartFile file,String path) throws Exception {
+    public ResponseEntity<UserDto> createUser(@Valid UserDto user, MultipartFile file, String path) throws Exception {
         return userService.addUser(user, file, path);
     }
 
@@ -63,11 +66,15 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         UserDetails userDetails = userDetailsService.loadUserByUsername(request.getUsername());
         String token = this.helper.generateToken(userDetails);
         RefreshToken refreshtoken = refreshTokenService.createToken(userDetails.getUsername());
-
         JwtResponse response = JwtResponse.builder()
                 .jwtToken(token)
                 .refreshToken(dtoUtility.toRefreshTokenRequest(refreshtoken))
                 .build();
+        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                userDetails, null, userDetails.getAuthorities());
+        // System.out.println(userDetails+" "+userDetails.getAuthorities());
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        config.updateSecurity();
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 

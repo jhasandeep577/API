@@ -17,9 +17,15 @@ public class JwtAutenticationEntryPoint implements AuthenticationEntryPoint {
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response,
             AuthenticationException authException) throws IOException, ServletException {
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        PrintWriter out = response.getWriter();
-        out.println("Permission Denied ! " + "Not Authorized to acces this resource");
-        out.close();
+        try {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            PrintWriter out = response.getWriter();
+
+            out.println("Permission Denied ! " + "Not Authorized to acces this resource");
+            out.close();
+            authException.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

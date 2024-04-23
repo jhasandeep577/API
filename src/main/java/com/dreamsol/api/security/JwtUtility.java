@@ -6,22 +6,34 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+import javax.crypto.spec.SecretKeySpec;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
+
+import com.dreamsol.api.entities.User;
+import com.dreamsol.api.repositories.UserRepository;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.io.Decoders;
-import io.jsonwebtoken.security.Keys;
 
 @Component
 public class JwtUtility {
-    public static final long JWT_TOKEN_VALIDITY = 5 * 60 * 60; // 18000=18sec
-    private String secret = "kjbwdlubdcueuhcqjhbubcluecljhqdcuvdcqHSHSUSuheuycjqhdjNJSUSSUYVSYUVYTCCTRXKIOUTWKJHFTRCUYVFugduywvecuyqevcjhquyvcjqhdcyvcubybu";
+    @Autowired
+    UserRepository userRepo;
+
+    @Value("${jwt.token.validity}")
+    int jwtTokenValidity;
+
+    private static final String secret = "kjbwdlubdcueuhcqjhbubcluecljhqdcuvdcqHSHSUSuheuycjqhdjNJSUSSUYVSYUVYTCCTRXKIOUTWKJHFTRCUYVFugduywvecuyqevcjhquyvcjqhdcyvcubybu";
+    private static final Key key= new SecretKeySpec(secret.getBytes(), SignatureAlgorithm.HS512.getJcaName());
 
     public String getUsernameFormToken(String token) {
-        return getClaimFromToken(token, Claims::getSubject);
+        System.out.println("Email : JwtFilter class: "+getEmailfromToken(token));
+        return getEmailfromToken(token);
     }
 
     public Date getExpirationFromToken(String token) {
@@ -29,18 +41,34 @@ public class JwtUtility {
     }
 
     public <T> T getClaimFromToken(String token, Function<Claims, T> claimsResolver) {
-        final Claims claims = getAllClaimsFromToken(token);
+         Claims claims = getAllClaimsFromToken(token);
         return claimsResolver.apply(claims);
+    }
+    public String getEmailfromToken(String token){
+        Claims claims=getAllClaimsFromToken(token);
+        return (String)claims.get("Email");
     }
 
     private Claims getAllClaimsFromToken(String token) {
-        return Jwts.parserBuilder().setSigningKey(getSigninKey()).build().parseClaimsJws(token).getBody();
+        return Jwts.parserBuilder()
+        .setSigningKey(key)
+        .build()
+        .parseClaimsJws(token)
+        .getBody();
     }
 
     // generate token for user
     public String generateToken(UserDetails userDetails) {
-        Map<String, Object> claims = new HashMap<>();
-        return doGenerateToken(claims, userDetails.getUsername());
+        User user = userRepo.findByEmail(userDetails.getUsername()).get();
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("Id", user.getID());
+        payload.put("Name", user.getName());
+        payload.put("Email", user.getEmail());
+        payload.put("Mobile-Number", user.getMobile());
+        payload.put("Roles", user.getUsertype().getUserTypeName());
+        payload.put("Permissions", user.getPermission().getPermission());
+        String subject = user.getEmail();
+        return doGenerateToken(payload, subject);
     }
 
     private Boolean isTokenExpired(String token) {
@@ -48,25 +76,16 @@ public class JwtUtility {
         return expiration.before(new Date());
     }
 
-    private String doGenerateToken(Map<String, Object> claims, String subject) {
-
-        return Jwts.builder().setClaims(claims).setSubject(subject).setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + JWT_TOKEN_VALIDITY ))    // 18sec*60*10 = 180m or 3hr
-                .signWith(getSigninKey(), SignatureAlgorithm.HS512)
+    private String doGenerateToken(Map<String, Object> payload, String subject) {
+        int duration = jwtTokenValidity * 60 * 1000; // minutes to miliseconds conversion
+        return Jwts.builder()
+                .setSubject(subject)
+                .setClaims(payload).setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + duration)) // minutes to mili seconds
+                .signWith(key, SignatureAlgorithm.HS512)
                 .compact();
     }
-    public String doGenerateRefreshToken(Map<String, Object> extraclaims, String subject) {            // subject is username
-
-        return Jwts.builder().setClaims(extraclaims).setSubject(subject).setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + JWT_TOKEN_VALIDITY * 60 * 1000))   // 18sec*60*1000 = 18000m or 300hr or approx 12Days
-                .signWith(getSigninKey(), SignatureAlgorithm.HS512)
-                .compact();
-    }
-
-    private Key getSigninKey() {
-        byte[] key = Decoders.BASE64.decode(secret);
-        return Keys.hmacShaKeyFor(key);
-    }
+ 
 
     public Boolean validateToken(String token, UserDetails userDetails) {
         final String username = getUsernameFormToken(token);

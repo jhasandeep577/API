@@ -1,6 +1,7 @@
 package com.dreamsol.api.configuration;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.context.annotation.Bean;
@@ -46,6 +47,7 @@ public class BeanConfig {
 		return userTypeDataMapping;
 	}
 
+	
 	@Bean
 	public PasswordEncoder passwordEncoder() {
 		return new BCryptPasswordEncoder();

@@ -8,9 +8,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.dreamsol.api.configuration.SecurityConfig;
 import com.dreamsol.api.dto.JwtRequest;
 import com.dreamsol.api.dto.JwtResponse;
 import com.dreamsol.api.dto.RefreshTokenRequest;
@@ -28,6 +31,8 @@ public class AuthenticationController {
     AuthenticationService authService;
     @Value("${project.image}")
     String path;
+    @Autowired
+    SecurityConfig config;
 
     @GetMapping("/login")
     public ResponseEntity<JwtResponse> login(@RequestBody JwtRequest request) {
@@ -35,7 +40,7 @@ public class AuthenticationController {
     }
 
     @PostMapping(path = "/create-User", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<UserDto> createUser(@Valid UserDto user, MultipartFile file) throws Exception {
+    public ResponseEntity<UserDto> createUser(@Valid @RequestPart("UserDto") UserDto user,@RequestParam("file") MultipartFile file) throws Exception {
         return authService.createUser(user, file, path);
     }
 

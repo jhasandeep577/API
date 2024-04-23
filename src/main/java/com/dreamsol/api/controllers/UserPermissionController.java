@@ -36,7 +36,7 @@ public class UserPermissionController {
     UserPermissionService service;
     FileService file_service;
     DtoUtility utility;
- //   @PreAuthorize("hasAuthority('Admin')")
+   @PreAuthorize("hasAuthority('Admin')")
     @GetMapping(path = "/fetch-all-Permissions")
     public ResponseEntity<PageResponse> getAllPermissions(
             @RequestParam(value = "pageNumber", defaultValue = "0", required = false) int pageNumber,
