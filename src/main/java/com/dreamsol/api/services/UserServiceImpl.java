@@ -76,6 +76,7 @@ public class UserServiceImpl implements UserService {
     EndPointUtility endPointUtility;
     @Autowired
     EndPointRepo endPointRepo;
+
     public ResponseEntity<PageResponse> fetchAllUser(int PageNumber, int PageSize, String SortBy, String sortDir,
             String filter, String path) {
 
@@ -125,16 +126,17 @@ public class UserServiceImpl implements UserService {
                     dbuser.setPermission(
                             this.userPermissionRepo.findByPermission(user.getPermission().getPermission()).get());
                     dbuser.setFile(uploadfile(file, path));
-                    // ^ Saving file on server and getting its randomly generated name
-                    String [] endpoints=  endPointUtility.getAuthorizedUrls(List.of(dbuser.getUsertype().getUserTypeName(),dbuser.getPermission().getPermission()));
-                    // Wokring on Endpoints DB Logic
-                    List<EndPoint> listEndPoints=new ArrayList<>();
-                    for(int x=0;x<endpoints.length;x++){
-                      if(endPointRepo.findByEndpoint(endpoints[x]).isPresent()){
-                         listEndPoints.add((endPointRepo.findByEndpoint(endpoints[x])).get());
-                      }
+        // ^ Saving file on server and getting its randomly generated name
+                    String[] endpoints = endPointUtility.getAuthorizedUrls(
+                            List.of(dbuser.getUsertype().getUserTypeName(), dbuser.getPermission().getPermission()));
+        // Wokring on Endpoints DB Logic
+                    List<EndPoint> listEndPoints = new ArrayList<>();
+                    for (int x = 0; x < endpoints.length; x++) {
+                        if (endPointRepo.findByEndpoint(endpoints[x]).isPresent()) {
+                            listEndPoints.add((endPointRepo.findByEndpoint(endpoints[x])).get());
+                        }
                     }
-                    if(listEndPoints!=null){
+                    if (listEndPoints != null) {
                         dbuser.setAuthorizedEndpoints(listEndPoints);
                     }
                     User NewDbUser = this.User_repo.save(dbuser);

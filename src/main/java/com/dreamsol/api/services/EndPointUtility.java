@@ -6,16 +6,19 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.dreamsol.api.configuration.SecurityConfig;
 
 @Component
 public class EndPointUtility {
-    SecurityConfig sc= new SecurityConfig();
 
-    public String [] getAuthorizedUrls(List<String> auths){     
-        // auths is List of role And permission
+    @Autowired
+    SecurityConfig sc;
+
+    public String[] getAuthorizedUrls(List<String> auths) {
+        // --> auths is List of role And permission on first index role and on second index permission
         List<String> urls = new ArrayList<String>();
         Map<String, List<String>> permissionAndRoleMap = sc.getPermissionandRoleMap();
         Map<String, String> urlMap = sc.getApifromKey();
@@ -47,7 +50,6 @@ public class EndPointUtility {
                 }
             }
         }
-
         List<String> authorizedurls = permissionUrls.stream().filter(url -> urls.contains(url))
                 .collect(Collectors.toList());
         String[] URLS = new String[authorizedurls.size()];

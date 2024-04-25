@@ -177,7 +177,8 @@ public class DtoUtility {
             dto.setPermission(this.toUserPermissionDto(user.getPermission()));
         }
         if (user.getAuthorizedEndpoints() != null) {
-            dto.setEndPoints(this.toListEndPointDto(user.getAuthorizedEndpoints()));
+            List<String> endpoints=user.getAuthorizedEndpoints().stream().map(endpoint->endpoint.getId()).collect(Collectors.toList());
+            dto.setAccessibleEndPoints(endpoints);
         }
         return dto;
     }

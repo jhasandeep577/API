@@ -15,8 +15,6 @@ import com.dreamsol.api.exceptionhandler.customexceptions.NoContentFoundExceptio
 import com.dreamsol.api.exceptionhandler.customexceptions.ResourceAlreadyExist;
 import com.dreamsol.api.exceptionhandler.customexceptions.ResourceNotFoundException;
 
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.MalformedJwtException;
 
 @ControllerAdvice
 public class ExceptionController {
@@ -73,24 +71,25 @@ public class ExceptionController {
         errorMessage.put("Unauthorized Request", exception.getMessage());
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorMessage);
     }
-    @ExceptionHandler(ExpiredJwtException.class)
-    public ResponseEntity<Map<String, String>> jwtTokenException(ExpiredJwtException exception) {
-        Map<String, String> errorMessage = new HashMap<String, String>();
-        errorMessage.put("Unauthorized Request", "JWT Token has Expired");
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorMessage);
-    }
-    @ExceptionHandler(MalformedJwtException.class)
-    public ResponseEntity<Map<String, String>> jwtTokenException(MalformedJwtException exception) {
-        Map<String, String> errorMessage = new HashMap<String, String>();
-        errorMessage.put("Unauthorized Request", "Malicious JWt Token not acceptable");
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorMessage);
-    }
-    @ExceptionHandler(IllegalStateException.class)
-    public ResponseEntity<Map<String, String>> jwtTokenException(IllegalStateException exception) {
-        Map<String, String> errorMessage = new HashMap<String, String>();
-        errorMessage.put("Unauthorized Request", exception.getMessage());
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorMessage);
-    }
+    // @ExceptionHandler(ExpiredJwtException.class)
+    // public ResponseEntity<Map<String, String>> jwtTokenException(ExpiredJwtException exception) {
+    //     Map<String, String> errorMessage = new HashMap<String, String>();
+    //     errorMessage.put("Unauthorized Request", "JWT Token has Expired");
+    //     return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorMessage);
+    // }
+    // @ExceptionHandler(MalformedJwtException.class)
+    // public ResponseEntity<Map<String, String>> jwtTokenException(MalformedJwtException exception) {
+    //     Map<String, String> errorMessage = new HashMap<String, String>();
+    //     errorMessage.put("Unauthorized Request", "Malicious JWt Token not acceptable");
+    //     return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorMessage);
+    // }
+    // @ExceptionHandler(IllegalStateException.class)
+    // public ResponseEntity<Map<String, String>> jwtTokenException(IllegalStateException exception) {
+    //     Map<String, String> errorMessage = new HashMap<String, String>();
+    //     errorMessage.put("Unauthorized Request", exception.getMessage());
+    //     return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorMessage);
+    // }
+   
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, String>> defException(Exception exception) {
         Map<String, String> errorMessage = new HashMap<String, String>();
@@ -98,5 +97,6 @@ public class ExceptionController {
         errorMessage.put("error", exception.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
     }
+   
 
 }

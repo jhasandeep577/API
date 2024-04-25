@@ -47,5 +47,5 @@ public class UserDto {
    @Schema(hidden = true)
    private String FileUrl;
    @Schema(hidden = true)
-   private List<EndPointDto> endPoints;
+   private List<String> accessibleEndPoints;
 }
