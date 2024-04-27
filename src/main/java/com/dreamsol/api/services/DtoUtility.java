@@ -171,15 +171,17 @@ public class DtoUtility {
             dto.setDepartment(this.toDepartmentDto(user.getDepartment()));
         }
         if (user.getUsertype() != null) {
-            dto.setUsertype(this.toUserTypeDto(user.getUsertype()));
+            UserTypeDto typeDto=this.toUserTypeDto(user.getUsertype());
+             typeDto.setEndointKeys(user.getAuthorizedEndpoints().stream().map(endpoint->endpoint.getId()).toList());
+            dto.setUsertype(typeDto);
         }
         if (user.getPermission() != null) {
             dto.setPermission(this.toUserPermissionDto(user.getPermission()));
         }
-        if (user.getAuthorizedEndpoints() != null) {
-            List<String> endpoints=user.getAuthorizedEndpoints().stream().map(endpoint->endpoint.getId()).collect(Collectors.toList());
-            dto.setAccessibleEndPoints(endpoints);
-        }
+        // if (user.getAuthorizedEndpoints() != null) {
+        //     List<String> endpoints=user.getAuthorizedEndpoints().stream().map(endpoint->endpoint.getId()).collect(Collectors.toList());
+        //     dto.setAccessibleEndPoints(endpoints);
+        // }
         return dto;
     }
 

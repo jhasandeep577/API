@@ -1,8 +1,10 @@
 package com.dreamsol.api.configuration;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,17 +18,12 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.stereotype.Component;
-import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 import com.dreamsol.api.security.CustomAccessDeniedHandler;
 import com.dreamsol.api.security.JwtAutenticationEntryPoint;
 import com.dreamsol.api.security.JwtFilter;
-import com.dreamsol.api.services.EndPointUtility;
 
 @Configuration
-@EnableWebMvc
-@Component
 public class SecurityConfig {
     @Autowired
     CustomAccessDeniedHandler accessDeniedHandler;
@@ -38,10 +35,9 @@ public class SecurityConfig {
     PasswordEncoder passwordEncoder;
     @Autowired
     UserDetailsService userDetailService;
-   
-    EndPointUtility endPointUtility = new EndPointUtility();
 
     public HttpSecurity security;
+    public HttpSecurity defaultSecurity;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -51,11 +47,20 @@ public class SecurityConfig {
                         auth -> auth.requestMatchers("/auth/**", "/swagger-ui/**", "/v3/api-docs/**")
                                 .permitAll());
         security.exceptionHandling(ex -> ex.authenticationEntryPoint(entryPoint)
-                .accessDeniedHandler(accessDeniedHandler))
+                                           .accessDeniedHandler(accessDeniedHandler))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         security.addFilterBefore(filter, UsernamePasswordAuthenticationFilter.class);
+        this.defaultSecurity=security;
         return security.build();
     }
+
+    // @Bean
+    // public DaoAuthenticationProvider daoAuthenticationProvider() {
+    //     DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+    //         provider.setUserDetailsService(userDetailService);
+    //         provider.setPasswordEncoder(passwordEncoder);
+    //     return provider;
+    // }
 
     private String[] getAuthorizedUrls() {
         if (SecurityContextHolder.getContext().getAuthentication() != null) {
@@ -63,11 +68,55 @@ public class SecurityConfig {
                     .map(auth -> {
                         return auth.getAuthority();
                     }).collect(Collectors.toList());
-                    return endPointUtility.getAuthorizedUrls(auths);
-          }
-   return new String[0];
-}
 
+            List<String> urls = new ArrayList<String>();
+            Map<String, List<String>> permissionAndRoleMap = this.getPermissionandRoleMap();
+            Map<String, String> urlMap = this.getApifromKey();
+            Set<String> keys = permissionAndRoleMap.keySet();
+            for (String key : keys) {
+                if (key.equalsIgnoreCase(auths.get(0))) {
+                    List<String> urlkey = permissionAndRoleMap.get(key);
+                    for (String url : urlkey) {
+                        Set<String> urlMapKeys = this.getApifromKey().keySet();
+                        for (String urlMapKey : urlMapKeys) {
+                            if (urlMapKey.equalsIgnoreCase(url)) {
+                                urls.add(urlMap.get(urlMapKey));
+                            }
+                        }
+                    }
+                }
+            }
+            List<String> permissionUrls = new ArrayList<String>();
+            for (String key : keys) {
+                if (key.equalsIgnoreCase(auths.get(1))) {
+                    List<String> urlkey = permissionAndRoleMap.get(key);
+                    for (String url : urlkey) {
+                        Set<String> urlMapKeys = this.getApifromKey().keySet();
+                        for (String urlMapKey : urlMapKeys) {
+                            if (urlMapKey.equalsIgnoreCase(url)) {
+                                permissionUrls.add(urlMap.get(urlMapKey));
+                            }
+                        }
+                    }
+                }
+            }
+
+            List<String> authorizedurls = permissionUrls.stream().filter(url -> urls.contains(url))
+                    .collect(Collectors.toList());
+            String[] URLS = new String[authorizedurls.size()];
+            for (int x = 0; x < authorizedurls.size(); x++) {
+                URLS[x] = authorizedurls.get(x);
+            }
+            System.out.println("Authorized urls:");
+            for (String demourl : URLS) {
+                System.out.println(demourl);
+            }
+            return URLS;
+        } else {
+            return new String[0];
+        }
+    }
+      
     private String[] getAuthorities() {
         return SecurityContextHolder.getContext().getAuthentication() != null
                 ? SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream()
@@ -79,10 +128,9 @@ public class SecurityConfig {
     public void updateSecurity() {
         if (SecurityContextHolder.getContext().getAuthentication() != null) {
             try {
-                security.authorizeHttpRequests(
+                 security=defaultSecurity;
+                 security.authorizeHttpRequests(
                         auth -> auth
-                                .requestMatchers("/auth/**", "/swagger-ui/**", "/v3/api-docs/**")
-                                .permitAll()
                                 .requestMatchers(this.getAuthorizedUrls())
                                 .hasAnyAuthority(this.getAuthorities()));
                 System.out.println("<------- Security Updated successfully ------>");

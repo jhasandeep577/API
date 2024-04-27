@@ -46,6 +46,6 @@ public class UserDto {
    private String password;
    @Schema(hidden = true)
    private String FileUrl;
-   @Schema(hidden = true)
-   private List<String> accessibleEndPoints;
+   // @Schema(hidden = true)
+   // private List<String> accessibleEndPoints;
 }

@@ -35,7 +35,14 @@ public class JwtUtility {
         System.out.println("Email : JwtFilter class: "+getEmailfromToken(token));
         return getEmailfromToken(token);
     }
-
+    public int getIdFormToken(String token) {
+        Claims claims=getAllClaimsFromToken(token);
+        return (int)claims.get("Id");
+    }
+    public String getRoleFormToken(String token) {
+        Claims claims=getAllClaimsFromToken(token);
+        return (String)claims.get("Role");
+    }
     public Date getExpirationFromToken(String token) {
         return getClaimFromToken(token, Claims::getExpiration);
     }
@@ -65,13 +72,13 @@ public class JwtUtility {
         payload.put("Name", user.getName());
         payload.put("Email", user.getEmail());
         payload.put("Mobile-Number", user.getMobile());
-        payload.put("Roles", user.getUsertype().getUserTypeName());
-        payload.put("Permissions", user.getPermission().getPermission());
+        payload.put("Role", user.getUsertype().getUserTypeName());
+        payload.put("Permission", user.getPermission().getPermission());
         String subject = user.getEmail();
         return doGenerateToken(payload, subject);
     }
 
-    private Boolean isTokenExpired(String token) {
+    public Boolean isTokenExpired(String token) {
         final Date expiration = getExpirationFromToken(token);
         return expiration.before(new Date());
     }

@@ -233,7 +233,9 @@ public class FileService {
         } else if (DepartmentDto.class.isAssignableFrom(type)) {
             return new DepartmentDto("Marketing",87676); // sample departmentdto
         } else if (UserTypeDto.class.isAssignableFrom(type)) {
-            return new UserTypeDto("Admin");  // sample usertypedto
+            UserTypeDto dto=new UserTypeDto();
+            dto.setUserTypeName("Admin");  // sample usertypedto
+            return dto;
         } else {
             return null; // For other types, return null
         }

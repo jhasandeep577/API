@@ -1,6 +1,7 @@
 package com.dreamsol.api.security;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -30,23 +31,38 @@ public class JwtFilter extends OncePerRequestFilter {
         String token = null;
         if (requestHeader != null && requestHeader.startsWith("Bearer")) {
             token = requestHeader.substring(7);
-            username=this.verifyJwt(token);
-        } 
-        if (username != null&& SecurityContextHolder.getContext().getAuthentication()==null) {
+            username = this.verifyJwt(token);
+            if (jwtUtility.getRoleFormToken(token).equalsIgnoreCase("user")) {
+                int userId = jwtUtility.getIdFormToken(token);
+                String[] ar = request.getRequestURL().toString().split("/");
+                int pathId = -1;
+                try {
+                    pathId = Integer.parseInt(ar[ar.length - 1]);
+                } catch (NumberFormatException e) {
+                    e.printStackTrace();
+                }
+                System.out.println(pathId + "------" + userId);
+                if (pathId != -1 && pathId != userId) {
+                    new CustomAccessDeniedHandler().handle(request, response,
+                            new AccessDeniedException("Permission Denied"));
+                }
+            }
+        }
+        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             // fetch User
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
             Boolean validateToken = this.jwtUtility.validateToken(token, userDetails);
             if (validateToken) {
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());
-                  authentication
-                 .setDetails(new WebAuthenticationDetailsSource()
-                 .buildDetails(request));
+                authentication
+                        .setDetails(new WebAuthenticationDetailsSource()
+                                .buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authentication);
-                
-            } 
+
+            }
         }
-            filterChain.doFilter(request, response);
+        filterChain.doFilter(request, response);
     }
 
     private String verifyJwt(String jwttoken) {
