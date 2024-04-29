@@ -7,7 +7,6 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -26,6 +25,7 @@ import com.dreamsol.api.services.DepartmentService;
 import com.dreamsol.api.services.DtoUtility;
 import com.dreamsol.api.services.FileService;
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -34,7 +34,7 @@ import lombok.AllArgsConstructor;
 @Tag(name = "Department Controller", description = "To Perform Operations On Department")
 @AllArgsConstructor(onConstructor_ = { @Autowired })
 @RequestMapping("/Department")
-@PreAuthorize("hasAuthority('Admin')")
+@SecurityRequirement(name = "bearerAuth")
 public class DepartmentController {
 
     DepartmentService DepartmentService;

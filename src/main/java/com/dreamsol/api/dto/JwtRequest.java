@@ -20,6 +20,6 @@ public class JwtRequest {
      @Size(max = 50, message = "Length of username cannot be more than 50")
      private String username;
      @NotBlank(message = "Password cannot be Empty")
-     @Size(max = 50,min = 10, message = "Length of password cannot be more than 10 and more than 50")
+     @Size(max = 50,min = 3, message = "Length of password cannot be more than 10 and more than 50")
      private String password;
 }

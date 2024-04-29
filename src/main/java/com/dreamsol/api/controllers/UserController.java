@@ -27,13 +27,14 @@ import com.dreamsol.api.services.DtoUtility;
 import com.dreamsol.api.services.FileService;
 import com.dreamsol.api.services.UserService;
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
 @RestController
 @Tag(name = "User Controller", description = "To Perform Operation On User")
 @RequestMapping("/User")
-
+@SecurityRequirement(name = "bearerAuth")
 public class UserController {
     @Value("${project.image}")
     String path;

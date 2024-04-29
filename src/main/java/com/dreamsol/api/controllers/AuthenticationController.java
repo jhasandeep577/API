@@ -34,8 +34,8 @@ public class AuthenticationController {
     @Autowired
     SecurityConfig config;
 
-    @GetMapping("/login")
-    public ResponseEntity<JwtResponse> login(@RequestBody JwtRequest request) {
+    @PostMapping("/login")
+    public ResponseEntity<JwtResponse> login(@Valid @RequestBody JwtRequest request) {
         return authService.login(request);
     }
 
@@ -44,8 +44,8 @@ public class AuthenticationController {
         return authService.createUser(user, file, path);
     }
 
-    @GetMapping("/getJwtToken-from-RefreshToken")
-    public ResponseEntity<JwtResponse> getToken(@RequestBody RefreshTokenRequest request) {
+    @PostMapping("/getJwtToken-from-RefreshToken")
+    public ResponseEntity<JwtResponse> getToken(@Valid @RequestBody RefreshTokenRequest request) {
         return authService.getToken(request);
     }
 }

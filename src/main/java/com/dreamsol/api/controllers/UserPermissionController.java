@@ -26,6 +26,7 @@ import com.dreamsol.api.services.DtoUtility;
 import com.dreamsol.api.services.FileService;
 import com.dreamsol.api.services.UserPermissionService;
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -34,7 +35,7 @@ import lombok.AllArgsConstructor;
 @Tag(name = "User-Permission Controller", description = "To Perform Operations On Permissions")
 @AllArgsConstructor(onConstructor_ = { @Autowired })
 @RequestMapping("/User-Permission")
-@PreAuthorize("hasAuthority('Admin')")
+@SecurityRequirement(name = "bearerAuth")
 public class UserPermissionController {
     SecurityConfig sc;
     UserPermissionService service;
